@@ -1,0 +1,26 @@
+-- Retrieve recent customer orders with totals and status
+SELECT
+    o.OrderID,
+    o.OrderDate,
+    c.CustomerName,
+    c.Email,
+    SUM(oi.Quantity * oi.UnitPrice) AS OrderTotal,
+    CASE 
+        WHEN o.Status = 'P' THEN 'Pending'
+        WHEN o.Status = 'C' THEN 'Completed'
+        WHEN o.Status = 'X' THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS StatusDescription
+FROM dbo.Orders AS o
+INNER JOIN dbo.OrderItems AS oi
+    ON o.OrderID = oi.OrderID
+INNER JOIN dbo.Customers AS c
+    ON o.CustomerID = c.CustomerID
+WHERE o.OrderDate >= DATEADD(MONTH, -3, GETDATE())
+GROUP BY
+    o.OrderID,
+    o.OrderDate,
+    c.CustomerName,
+    c.Email,
+    o.Status
+ORDER BY o.OrderDate DESC;
